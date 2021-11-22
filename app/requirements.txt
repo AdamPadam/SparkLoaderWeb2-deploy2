@@ -1,0 +1,4 @@
+Django==3.2.9
+djangorestframework
+paramiko==2.1.6
+psycopg2-binary==2.8.5
