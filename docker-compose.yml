@@ -3,28 +3,33 @@ version: '3.7'
 services:
   db:
     build: ./db
-    container_name: sparkLoaderWeb2-db
-    volumes:
-      - ./db/data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=DKyyePqFavqpbNLa
-      - POSTGRES_DB=postgres
+    container_name: spark-loader-web-2-db
     ports:
       - "5433:5432"
+    env_file:
+      - ./.env.dev.db
 
   app:
     build: ./app
-    container_name: sparkLoaderWeb2-app
-    command: sh -c "/usr/src/app/run_server.sh"
+    container_name: spark-loader-web-2
+    command: sh -c "/home/app/web/run_server.sh"
     depends_on:
       - db
     volumes:
-      - ./app/sparkLoaderWeb2:/usr/src/app/sparkLoaderWeb2
-    ports:
-      - "8081:8000"
+      - ./app/loaders:/usr/src/app/web/sparkLoaderWeb2/security
+      - ./app/security:/usr/src/app/web/sparkLoaderWeb2/loaders
+    expose:
+      - 8000
     env_file:
       - ./.env.dev
 
+  nginx:
+    build: ./nginx
+    container_name: spark-loader-web-2-nginx
+    ports:
+      - "1337:80"
+    depends_on:
+      - app
+
 volumes:
-  postgres_data:
+  static_volume:

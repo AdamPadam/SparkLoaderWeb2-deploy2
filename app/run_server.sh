@@ -1,11 +1,21 @@
-#!/bin/bash
+#!/bin/sh
 
-sleep 10
+if [ "$DATABASE" = "postgres" ]
+then
+    echo "Waiting for postgres..."
 
-python sparkLoaderWeb2/manage.py collectstatic --noinput
+    while ! nc -z $SQL_HOST $SQL_PORT; do
+      sleep 0.1
+    done
 
-python sparkLoaderWeb2/manage.py migrate
+    echo "PostgreSQL started"
+fi
 
-python sparkLoaderWeb2/manage.py createsuperuser --noinput
+cd sparkLoaderWeb2
+python manage.py flush --no-input
+python manage.py migrate
+python manage.py createsuperuser --noinput
+gunicorn sparkLoaderWeb2.wsgi:application --bind 0.0.0.0:8000
+cd ..
 
-python sparkLoaderWeb2/manage.py runserver 0.0.0.0:8000
+exec "$@"
